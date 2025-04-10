@@ -1,12 +1,18 @@
-opencv-python==4.11.0.86
-matplotlib==3.10.1
-numpy==1.25.0
-Pillow==11.1.0
-torch==2.6.0+cpu
-torchvision==0.21.0+cpu
-albumentations==2.0.5
-pyyaml==6.0.2
-tqdm==4.67.1
+opencv-python==4.9.0.80
+matplotlib==3.8.3
+numpy==1.26.4
+Pillow==10.2.0
+albumentations==1.4.0
+pyyaml==6.0.1
+tqdm==4.66.2
 seaborn==0.13.2
-scikit-learn==1.6.1
-ultralytics==8.3.105
+scikit-learn==1.4.1.post1
+
+# PyTorch with CUDA 11.8 (for Python 3.10)
+torch==2.2.1+cu118
+torchvision==0.17.1+cu118
+torchaudio==2.2.1+cu118
+-f https://download.pytorch.org/whl/torch_stable.html
+
+# YOLOv8
+ultralytics==8.1.25

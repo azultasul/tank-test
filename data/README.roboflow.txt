@@ -1,8 +1,8 @@
 
-tank_simulator_dataset - v1 2025-04-09 9:57pm
+tank_simulator_dataset_2 - v1 2025-04-10 11:28pm
 ==============================
 
-This dataset was exported via roboflow.com on April 9, 2025 at 1:01 PM GMT
+This dataset was exported via roboflow.com on April 10, 2025 at 2:28 PM GMT
 
 Roboflow is an end-to-end computer vision platform that helps you
 * collaborate with your team on computer vision projects
@@ -18,7 +18,7 @@ visit https://github.com/roboflow/notebooks
 To find over 100k other datasets and pre-trained models, visit https://universe.roboflow.com
 
 The dataset includes 8 images.
-Tank-sim-group are annotated in YOLOv8 format.
+Tank-sim-group-VDuq are annotated in YOLOv8 format.
 
 The following pre-processing was applied to each image:
 * Auto-orientation of pixel data (with EXIF-orientation stripping)

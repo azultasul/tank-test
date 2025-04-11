@@ -70,59 +70,78 @@ transform = A.Compose(
     bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels'])
 )
 
-image_images_dir = './data/train/images/'
-image_labels_dir = './data/train/labels/'
-aug_images_dir = './data/train/aug_images/'
-aug_labels_dir = './data/train/aug_labels/'
+image_dir = './data/train/images/'
+label_dir = './data/train/labels/'
+output_image_dir = './data/train/aug_images/'
+output_label_dir = './data/train/aug_labels/'
 
+os.makedirs(output_image_dir, exist_ok=True)
+os.makedirs(output_label_dir, exist_ok=True)
 
-image_images_dir = './data/train/images/'
+class AUGMENTATOR:
+    def __init__(self, output_num, image_dir, label_dir, output_image_dir, output_label_dir, transform):
+        self.output_num = output_num
+        self.image_dir = image_dir
+        self.label_dir = label_dir
+        self.output_image_dir = output_image_dir
+        self.output_label_dir = output_label_dir
+        self.transform = transform
 
-os.makedirs(aug_images_dir, exist_ok=True)
-os.makedirs(aug_labels_dir, exist_ok=True)
+    def run(self):
+        for filename in os.listdir(self.image_dir):
+            if not filename.endswith('.jpg'):
+                continue
 
-for filename in os.listdir(image_images_dir):
-    if not filename.endswith('.jpg'):
-        continue
-
-    # transform - image 
-    image_path = os.path.join(image_images_dir, filename)
-    image = cv2.imread(image_path)
-
-    # transform - image 
-    # transform - class_labels 
-    bboxes = []
-    class_labels = []
-    
-    label_filename = filename.replace('.jpg', '.txt')
-    label_path = os.path.join(image_labels_dir, label_filename)
-
-    with open(label_path, 'r') as f:
-        for line in f.readlines():
-            parts = line.strip().split()
-            class_id = parts[0]  # 클래스 ID
-            bbox = [float(i) for i in parts[1:]] # [x_center, y_center, width, height]
+            # transform - image 
+            image_path = os.path.join(self.image_dir, filename)
+            label_path = os.path.join(self.label_dir, filename.replace('.jpg', '.txt'))
             
-            bboxes.append(bbox)
-            class_labels.append(int(float(class_id)))
+            image = cv2.imread(image_path)
+            if image is None:
+                continue
 
-    # print("????????", image)
-    # print("????????", bboxes)
-    # print("????????", [int(float(i)) for i in class_labels])
+            bboxes, class_labels = self.__read_label__(label_path)
 
-    # 이미지 증강
-    augmented = transform(image=image, bboxes=bboxes, class_labels=class_labels)
-    # print(augmented)
-    aug_image = augmented['image']
-    aug_bboxes = augmented['bboxes']
-    aug_labels = augmented['class_labels']
+            # 이미지 증강
+            for index in range(self.output_num):
+                augmented = transform(image=image, bboxes=bboxes, class_labels=class_labels)
+                self.__save_output__(filename, augmented, index)
+            
+    def __read_label__(self, label_path):
+        bboxes = []
+        class_labels = []
 
-    # 증강 이미지 저장
-    aug_images_path = os.path.join(aug_images_dir, f'{filename}_aug.jpg')
-    aug_labels_path = os.path.join(aug_labels_dir, f'{filename}_aug.txt')
+        with open(label_path, 'r') as f:
+            for line in f.readlines():
+                parts = line.strip().split()
+                class_id = parts[0]  # 클래스 ID
+                bbox = [float(i) for i in parts[1:]] # [x, y, width, height]
+                
+                bboxes.append(bbox)
+                class_labels.append(int(float(class_id)))
+        return bboxes, class_labels
+    
+    def __save_output__(self, filename, augmented, index):
+        aug_image = augmented['image']
+        aug_bboxes = augmented['bboxes']
+        aug_labels = augmented['class_labels']
 
-    cv2.imwrite(aug_images_path, aug_image)
-    with open(aug_labels_path, 'w') as f:
-        for label, bbox in zip(aug_labels, aug_bboxes):
-            x_center, y_center, w, h = bbox  # 이미 YOLO 형식일 경우
-            f.write(f"{label} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
+        # 증강 이미지 저장
+        output_images_path = os.path.join(self.output_image_dir, f'{filename}_{index}.jpg')
+        output_labels_path = os.path.join(output_label_dir, f'{filename}_{index}.txt')
+
+        cv2.imwrite(output_images_path, aug_image)
+        with open(output_labels_path, 'w') as f:
+            for label, bbox in zip(aug_labels, aug_bboxes):
+                x, y, w, h = bbox  # 이미 YOLO 형식일 경우
+                f.write(f"{label} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n")
+    
+aug = AUGMENTATOR(
+    output_num=4,
+    image_dir=image_dir,
+    label_dir=label_dir,
+    output_image_dir=output_image_dir,
+    output_label_dir=output_label_dir,
+    transform=transform
+)
+aug.run()

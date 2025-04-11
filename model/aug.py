@@ -1,8 +1,6 @@
 import os
 import cv2
 import albumentations as A
-from albumentations.pytorch import ToTensorV2
-import numpy as np
 
 transform = A.Compose(
     [
@@ -19,8 +17,6 @@ transform = A.Compose(
             A.GaussianBlur(blur_limit=(3, 5), p=0.5),
             A.Blur(blur_limit=(3, 5), p=0.5),
         ], p=0.3),
-        A.RandomFog(p=0.1),
-        A.RandomShadow(p=0.1),
         A.Perspective(scale=(0.05, 0.1), p=0.2),
         A.OneOf([
             # ☁️ 안개
@@ -64,7 +60,6 @@ transform = A.Compose(
                 p=1.0
             ),
         ], p=0.3),
-        A.Resize(640, 640),
         # ToTensorV2()
     ],
     bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels'])
@@ -78,7 +73,7 @@ output_label_dir = './data/train/aug_labels/'
 os.makedirs(output_image_dir, exist_ok=True)
 os.makedirs(output_label_dir, exist_ok=True)
 
-class AUGMENTATOR:
+class Augmentator:
     def __init__(self, output_num, image_dir, label_dir, output_image_dir, output_label_dir, transform):
         self.output_num = output_num
         self.image_dir = image_dir
@@ -136,8 +131,8 @@ class AUGMENTATOR:
                 x, y, w, h = bbox  # 이미 YOLO 형식일 경우
                 f.write(f"{label} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n")
     
-aug = AUGMENTATOR(
-    output_num=4,
+aug = Augmentator(
+    output_num=4, # 한 이미지로 몇장의 증강 데이터를 만들지 결정정
     image_dir=image_dir,
     label_dir=label_dir,
     output_image_dir=output_image_dir,
